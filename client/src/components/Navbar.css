@@ -1,7 +1,10 @@
+@import "tailwindcss";
+
 /* Navbar.css */
 .navbar {
   background-color: #6b55b1 !important;
   padding: 1rem;
+  font-family: Poppins;
 }
 
 .toolbar {

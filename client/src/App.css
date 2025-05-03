@@ -1,22 +1,23 @@
 @import "tailwindcss";
-*{
+
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'montserrat', sans-serif !important;
+  font-family: Poppins;
   font-size: 1.3rem;
 }
-.main{
+.main {
   display: flex;
   flex-grow: 1;
 }
 @media (max-width: 768px) {
   * {
-    font-size: .9rem;
+    font-size: 0.9rem;
   }
 }
 @media (max-width: 475px) {
   * {
-    font-size: .5rem;
+    font-size: 0.5rem;
   }
 }
