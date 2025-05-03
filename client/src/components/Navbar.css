@@ -1,0 +1,57 @@
+/* Navbar.css */
+.navbar {
+  background-color: #6b55b1 !important;
+  padding: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  background-color: white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  margin-right: 8px;
+}
+
+.company-name {
+  color: white;
+}
+
+/* Center Nav Links - visible only on larger screens */
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+
+/* Button styles */
+.nav-button {
+  color: white !important;
+}
+
+.login-box {
+  display: flex;
+  align-items: center;
+}
+
+.login-button {
+  background-color: #18e4c7 !important;
+  color: white !important;
+}
+
+/* Responsive styles */
+@media (max-width: 900px) {
+  .nav-links {
+    display: none; /* Hide center links on smaller screens */
+  }
+}

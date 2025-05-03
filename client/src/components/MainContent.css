@@ -1,0 +1,18 @@
+.main-container{
+  background-color:#17153A;
+  color: white;
+  padding: 3rem;
+  width: 100%;
+}
+.left-box-content::first-letter{
+  color: #18E4C7;
+  font-size: 4rem;
+  font-weight:bold;
+}
+.right-box-content{
+  width: 100%;
+  max-width: 31.25rem;
+  display: block;
+  margin: 0 auto;
+  border-radius: 20px;
+}

@@ -1,0 +1,25 @@
+.code-editor {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 80px);
+}
+
+.ques-code {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f5f5f5;
+  padding: 10px;
+}
+
+.write-code {
+  flex: 2;
+  overflow-y: auto;
+  background-color: #ffffff;
+  padding: 10px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}

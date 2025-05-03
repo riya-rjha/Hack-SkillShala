@@ -1,0 +1,13 @@
+.roadmap{
+  background-color:#17153A;
+  color:#fff;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  width: 100%; 
+  overflow-x: auto;
+}
+.roadmap h1 u{
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}

@@ -10,8 +10,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
+    "@react-three/drei": "^10.0.6",
+    "@react-three/fiber": "^9.1.2",
+    "@tailwindcss/vite": "^4.1.4",
+    "framer-motion": "^12.7.4",
+    "monaco-editor": "^0.52.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.5.2",
+    "tailwindcss": "^4.1.4",
+    "three": "^0.175.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
