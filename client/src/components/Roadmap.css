@@ -1,4 +1,4 @@
-.roadmap{
+.roadmap-container{
   background-color:#17153A;
   color:#fff;
   align-items: center;
@@ -7,7 +7,32 @@
   width: 100%; 
   overflow-x: auto;
 }
-.roadmap h1 u{
+.description{
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
+  margin:0 auto;
+  width: 80%;
+}
+.roadmap-container h1 u{
   font-size: 2rem;
-  margin-bottom: 1rem;
+}
+.description-text{
+  margin: 1rem !important;
+}
+.description-text span{
+  color: #18E4C7;
+  font-weight: bold;
+}
+.description-image-container{
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem 0;
+}
+.description-image-container img{
+  height: 30rem;
+  width: 100%;
 }

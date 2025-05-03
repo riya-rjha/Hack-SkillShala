@@ -7,6 +7,8 @@ import MainContent from "./components/MainContent.jsx";
 import Footer from "./components/Footer.jsx";
 import Roadmap from "./components/Roadmap.jsx";
 import CodeEditor from "./components/CodeEditor.jsx";
+import LoginPage from "./pages/Login.jsx";
+import SignupPage from "./pages/SignupPage.jsx";
 
 const App = () => {
   return (
@@ -26,6 +28,8 @@ const App = () => {
         }
       />
       <Route path="/test" element={<CodeEditor />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
     </Routes>
   );
 };

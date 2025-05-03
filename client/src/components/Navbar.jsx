@@ -15,9 +15,9 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import "./Navbar.css";
+import {Link} from "react-router-dom";
 
 const Navbar = () => {
-
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -54,9 +54,11 @@ const Navbar = () => {
           {/* Right - Login & Hamburger Menu */}
           <Box className="login-box">
             {!isMobile ? (
+              <Link to='/login'>
               <Button variant="contained" className="login-button">
                 Student Login
               </Button>
+              </Link>
             ) : (
               <IconButton
                 edge="end"
