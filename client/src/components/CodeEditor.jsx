@@ -127,7 +127,7 @@ const CodeEditorComponent = () => {
               variant="h6"
               sx={{ fontWeight: "bold", fontSize: "1rem" }}
             >
-              Aarogya Shala
+              SkillShala
             </Typography>
           </Box>
 

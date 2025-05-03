@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import Navbar from "../components/Navbar";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Navbar from '../components/Navbar';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,10 +13,10 @@ const LoginPage = () => {
     try {
       const response = await axios.post("http://localhost:8080/user/login", {
         email,
-        password,
+        password
       });
       localStorage.setItem("token", response.data.token);
-      navigate("/");
+      navigate('/');
     } catch (e) {
       alert("Service Down");
       console.log(e);
@@ -26,22 +26,18 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-[#1A1440] flex flex-col font-['Montserrat_Alternates']">
       {/* Navbar */}
-      <Navbar />
+      <Navbar/>
 
       {/* Login Card */}
       <div className="flex-grow flex items-center justify-center px-4">
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="w-24 h-24 mx-auto bg-[#1A2B4C] rounded-full mb-4"></div>
           <h2 className="text-2xl font-bold mb-1">AarogyaShala</h2>
-          <p className="text-gray-600 mb-6 text-sm">
-            Learn Smarter. Grow Faster. Powered by AI & Us.
-          </p>
+          <p className="text-gray-600 mb-6 text-sm">Learn Smarter. Grow Faster. Powered by AI & Us.</p>
 
           <form className="space-y-4 text-left" onSubmit={handleLogin}>
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium mb-1">Email Address</label>
               <input
                 type="email"
                 onChange={(e) => setEmail(e.target.value)}
@@ -57,9 +53,9 @@ const LoginPage = () => {
               />
             </div>
             <p className="text-sm">
-              Don’t have an account?{" "}
-              <span
-                onClick={() => navigate("/signup")}
+              Don’t have an account?{' '}
+              <span 
+                onClick={() => navigate('/signup')} 
                 className="text-teal-500 font-semibold cursor-pointer hover:underline"
               >
                 Register!

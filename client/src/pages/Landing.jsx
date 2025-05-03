@@ -5,7 +5,7 @@ export default function GrowthRoadmapPage() {
     <div className="bg-gradient-to-br from-[#1b163d] to-[#2c2651] text-white font-sans">
       {/* Header */}
       <header className="flex justify-between items-center px-6 py-4 bg-[#1a133a] shadow-lg">
-        <div className="text-white font-extrabold text-2xl tracking-wide">Aarogya Shala</div>
+        <div className="text-white font-extrabold text-2xl tracking-wide">SkillShala</div>
         <nav className="flex space-x-6 text-sm font-medium">
           <a href="#" className="hover:text-teal-300 transition-colors">About Us</a>
           <a href="#" className="hover:text-teal-300 transition-colors">Services</a>
@@ -56,7 +56,7 @@ export default function GrowthRoadmapPage() {
       <footer className="bg-[#1a133a] text-gray-300 pt-14 pb-10 px-6 mt-10">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
           <div>
-            <h3 className="text-xl font-bold text-white mb-4">Aarogya Shala</h3>
+            <h3 className="text-xl font-bold text-white mb-4">SkillShala</h3>
             <p className="text-sm leading-relaxed">Empowering your career journey through personalized learning paths, assessments, and career insights.</p>
           </div>
           <div>
@@ -91,7 +91,7 @@ export default function GrowthRoadmapPage() {
           </div>
         </div>
         <div className="text-center text-xs text-gray-400 mt-10 border-t border-gray-600 pt-4">
-          © 2025 Aarogya Shala. All rights reserved.
+          © 2025 SkillShala. All rights reserved.
         </div>
       </footer>
     </div>
