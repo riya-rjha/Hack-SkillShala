@@ -16,7 +16,6 @@ app.get("/", (req, res) => {
 
 app.use("/user", authRouter)
 
-
 app.listen(port, () => {
   console.log(`App is listening at http://localhost:${port}`);
 });
