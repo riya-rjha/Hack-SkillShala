@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, {Schema} from "mongoose";
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
     name:{
         type: String,
         required: true,
@@ -18,7 +18,17 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         minLength: 6
-    }
+    },
+    topics: {
+        type: [String],
+        default: []
+    },
+    testsTaken: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Test"
+        }
+    ]
 }, {timestamps: true});
 
 export const User = mongoose.model("User", userSchema);
