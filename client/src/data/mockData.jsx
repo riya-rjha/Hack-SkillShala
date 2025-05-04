@@ -1,6 +1,6 @@
 export const mockUserData = {
   id: "user-123",
-  name: "Aryan Singh",
+  name: "RRJ",
   email: "aryan.singh@example.com",
   overallSkillLevel: "Intermediate",
   questionsCompleted: 48,

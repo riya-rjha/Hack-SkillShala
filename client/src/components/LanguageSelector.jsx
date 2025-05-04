@@ -1,28 +1,28 @@
-import {
-  Box,
-  TextField,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
+// LanguageSelector.js
 import React from "react";
+import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { LANGUAGE_VERSIONS } from "../constants";
+const languages = Object.entries(LANGUAGE_VERSIONS);
 
-const LanguageSelector = () => {
+const LanguageSelector = ({ language, setLanguage }) => {
   return (
-    <div>
-      <Box>
-        <TextField>Language: </TextField>
-        <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Languages</InputLabel>
-          <Select>
-            <MenuItem>Java</MenuItem>
-            <MenuItem>C++</MenuItem>
-            <MenuItem>JavaScript</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-    </div>
+    <Box sx={{ m: 2, minWidth: 150 }}>
+      <FormControl fullWidth>
+        <InputLabel id="language-select-label">Language</InputLabel>
+        <Select
+          labelId="language-select-label"
+          value={language}
+          label="Language"
+          onChange={(e) => setLanguage(e.target.value)}
+        >
+          {languages.map(([language, version]) => (
+            <MenuItem key={language} value={language}>
+              {language}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Box>
   );
 };
 

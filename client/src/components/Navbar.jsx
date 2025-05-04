@@ -36,7 +36,7 @@ const Navbar = () => {
           <Box className="logo-section">
             <img src="/logo.png" className="logo" />
             <Typography variant="h6" className="company-name">
-              Aarogya Shala
+              SkillShala
             </Typography>
           </Box>
 
