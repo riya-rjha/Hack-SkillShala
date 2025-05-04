@@ -1,6 +1,7 @@
 const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const path = require('path');
+const cors = require("cors");
 
 // Load environment variables
 const apiKey = "AIzaSyBO0aMmK8IZcwLCxaPjsdns7fTZJCn7k3Y";
@@ -9,12 +10,13 @@ const genAI = new GoogleGenerativeAI(apiKey);
 // Initialize Express app
 const app = express();
 app.use(express.json());
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize Gemini model
 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-// API endpoint to handle chat messages
+// API endpoint to handle chat prompts
 app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
@@ -40,7 +42,7 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

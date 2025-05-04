@@ -31,7 +31,6 @@ const LoginPage = () => {
       {/* Login Card */}
       <div className="flex-grow flex items-center justify-center px-4">
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md text-center">
-          <div className="w-24 h-24 mx-auto bg-[#1A2B4C] rounded-full mb-4"></div>
           <h2 className="text-2xl font-bold mb-1">AarogyaShala</h2>
           <p className="text-gray-600 mb-6 text-sm">Learn Smarter. Grow Faster. Powered by AI & Us.</p>
 

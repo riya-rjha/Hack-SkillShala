@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
-import languageTemplates from "../languageTemplates"; // Import the language templates
+import React, { useState, useEffect, useRef } from "react";
 import CodeEditor from "@monaco-editor/react";
 import "./CodeEditor.css";
 import LanguageSelector from "./LanguageSelector";
-import { useRef } from "react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import {
   AppBar,
@@ -16,8 +14,9 @@ import {
   Slide,
 } from "@mui/material";
 import { executeCode } from "./api";
-import { testCases } from "../testCases";
 import { useNavigate } from "react-router-dom";
+import problems from "../data.json"; // Import the problems JSON file
+import languageTemplates from "../languageTemplates";
 
 const CodeEditorComponent = () => {
   const [showResult, setShowResult] = useState(false);
@@ -25,12 +24,17 @@ const CodeEditorComponent = () => {
   const [language, setLanguage] = useState("javascript");
   const [code, setCode] = useState(() => {
     const saved = localStorage.getItem("code_" + language);
-    return saved || languageTemplates[language] || "// Write your code here";
+    return (
+      saved ||
+      problems[0].functionSignature[language] ||
+      "// Write your code here"
+    );
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedProblem, setSelectedProblem] = useState(problems[0]);
   const editorRef = useRef();
   const navigate = useNavigate();
-  const [ques, setQues] = useState("");
+  const [ques, setQues] = useState(selectedProblem.description);
 
   const onMount = (editor) => {
     editorRef.current = editor;
@@ -51,41 +55,132 @@ const CodeEditorComponent = () => {
     }
   };
 
-  // Wrap user's function call in code
-  const wrapUserCode = (code, language, input) => {
+  // Validate user's Java code
+  const isValidJavaCode = (code) => {
+    return code.includes("public int[] twoSum(int[] nums, int target)");
+  };
+
+  // Generate test harness to run the user's function against test cases
+  const wrapUserCode = (code, language, testCases) => {
     if (language === "javascript") {
-      return `
-  ${code}
-  console.log(JSON.stringify(twoSum(...${input})));
-      `;
+      let harness = `
+${code}
+const results = [];
+`;
+
+      testCases.forEach((testCase) => {
+        const { nums, target } = testCase.input;
+        harness += `
+try {
+  const result = twoSum(${JSON.stringify(nums)}, ${target});
+  results.push(JSON.stringify(result));
+} catch (e) {
+  results.push("Error: " + e.message);
+}
+`;
+      });
+
+      harness += `
+console.log(JSON.stringify(results));
+`;
+      return harness;
+    } else if (language === "java") {
+      // Prepare input string for Scanner (simulate System.in)
+      let inputString = "";
+      testCases.forEach((testCase) => {
+        const { nums, target } = testCase.input;
+        inputString += `${nums.length}\n${nums.join(" ")}\n${target}\n`;
+      });
+
+      // Test harness for Java
+      const harness = `
+import java.util.*;
+${code}
+public class Main {
+  public static void main(String[] args) {
+    Scanner scanner = new Scanner(System.in);
+    List<String> results = new ArrayList<>();
+    
+    // Process all test cases
+    try {
+      for (int t = 0; t < ${testCases.length}; t++) {
+        int n = scanner.nextInt(); // Read array length
+        int[] nums = new int[n];
+        for (int i = 0; i < n; i++) {
+          nums[i] = scanner.nextInt(); // Read array elements
+        }
+        int target = scanner.nextInt(); // Read target
+        Solution sol = new Solution();
+        int[] result = sol.twoSum(nums, target);
+        results.add("[" + result[0] + "," + result[1] + "]");
+      }
+    } catch (Exception e) {
+      results.add("Error: " + e.getMessage());
     }
-    // Add wrappers for other languages if needed
+    
+    // Output results as JSON array
+    System.out.println(results.toString().replace(" ", ""));
+  }
+}
+`;
+      return { sourceCode: harness, stdin: inputString };
+    }
     return code;
   };
 
   const handleRun = async () => {
     const userCode = editorRef.current.getValue();
-    if (!userCode) return;
+    if (!userCode) {
+      setOutput("Error: No code provided.");
+      setShowResult(true);
+      return;
+    }
+
+    // Validate Java code
+    if (language === "java" && !isValidJavaCode(userCode)) {
+      setOutput(
+        "Error: Please provide a valid Solution class with a twoSum method."
+      );
+      setShowResult(true);
+      return;
+    }
 
     setIsLoading(true);
     setShowResult(false);
 
     try {
       const results = [];
+      const testCases = selectedProblem.testCases;
 
-      for (let i = 0; i < testCases.length; i++) {
-        const { nums, target } = testCases[i].input;
-        const input = JSON.stringify([nums, target]);
+      // Wrap the user's code
+      const wrapped = wrapUserCode(userCode, language, testCases);
+      let sourceCode = wrapped;
+      let stdin = "";
 
-        const wrappedCode = wrapUserCode(userCode, language, input);
-
-        const { run } = await executeCode(language, wrappedCode);
-        const output = parseOutput(run.output); // Clean/parse output
-        const passed = arraysEqual(output, testCases[i].expected);
-
-        results.push({ ...testCases[i], actual: output, passed });
+      if (language === "java") {
+        sourceCode = wrapped.sourceCode;
+        stdin = wrapped.stdin;
       }
 
+      // Execute the wrapped code
+      const { run } = await executeCode(language, sourceCode, stdin);
+      const outputs = parseOutput(run.output);
+
+      // Compare each test case result
+      testCases.forEach((testCase, i) => {
+        const actual = Array.isArray(outputs) ? outputs[i] : outputs;
+        let parsedActual;
+        try {
+          parsedActual =
+            typeof actual === "string" ? JSON.parse(actual) : actual;
+        } catch {
+          parsedActual = actual;
+        }
+        const passed = arraysEqual(parsedActual, testCase.expected);
+        results.push({ ...testCase, actual: parsedActual, passed });
+      });
+
+      // Format the output
       setOutput(
         results
           .map(
@@ -108,12 +203,11 @@ const CodeEditorComponent = () => {
       setIsLoading(false);
     }
   };
-  const handleSubmit = () => {
-    const questionText =
-      "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.";
 
-    setQues(questionText);
-    navigate("/roadmap", { state: { code, ques: questionText } });
+  const handleSubmit = () => {
+    navigate("/roadmap", {
+      state: { code, ques: selectedProblem.description },
+    });
   };
 
   return (
@@ -190,14 +284,17 @@ const CodeEditorComponent = () => {
                   variant="h5"
                   sx={{ fontWeight: "bold", marginBottom: 2 }}
                 >
-                  Two Sum
+                  {selectedProblem.title}
                 </Typography>
                 <Typography variant="body1" sx={{ marginBottom: 2 }}>
-                  Given an array of integers nums and an integer target, return
-                  indices of the two numbers such that they add up to target.
-                  You may assume that each input would have exactly one
-                  solution, and you may not use the same element twice. You can
-                  return the answer in any order.
+                  {selectedProblem.description}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ marginBottom: 2, fontStyle: "italic" }}
+                >
+                  Note: Write only the Solution class with the twoSum method. Do
+                  not include main or Scanner code.
                 </Typography>
                 <Typography
                   variant="h6"
@@ -209,9 +306,15 @@ const CodeEditorComponent = () => {
                   <strong>Constraints</strong>
                 </Typography>
                 <ul style={{ marginLeft: "20px", listStyle: "disc" }}>
-                  <li>2 &lt;= nums.length &lt;= 10⁴</li>
-                  <li>-10⁹ &lt;= nums[i] &lt;= 10⁹</li>
-                  <li>-10⁹ &lt;= target &lt;= 10⁹</li>
+                  <li>
+                    2 &lt;= nums.length &lt;= 10<sup>4</sup>
+                  </li>
+                  <li>
+                    -10<sup>9</sup> &lt;= nums[i] &lt;= 10<sup>9</sup>
+                  </li>
+                  <li>
+                    -10<sup>9</sup> &lt;= target &lt;= 10<sup>9</sup>
+                  </li>
                 </ul>
                 <Typography
                   variant="h6"
@@ -219,12 +322,16 @@ const CodeEditorComponent = () => {
                 >
                   Examples
                 </Typography>
-                <Typography variant="body2" sx={{ marginTop: 1 }}>
-                  <strong>Example 1:</strong>
-                  <br />
-                  Input: nums = [2,7,11,15], target = 9<br />
-                  Output: [0,1]
-                </Typography>
+                {selectedProblem.testCases.map((testCase, index) => (
+                  <Typography key={index} variant="body2" sx={{ marginTop: 1 }}>
+                    <strong>Example {index + 1}:</strong>
+                    <br />
+                    Input: nums = {JSON.stringify(testCase.input.nums)}, target
+                    = {testCase.input.target}
+                    <br />
+                    Output: {JSON.stringify(testCase.expected)}
+                  </Typography>
+                ))}
               </Paper>
             </Grid>
           </Grid>
@@ -236,7 +343,11 @@ const CodeEditorComponent = () => {
             setLanguage={(newLang) => {
               setLanguage(newLang);
               const saved = localStorage.getItem("code_" + newLang);
-              setCode(saved || languageTemplates[newLang]);
+              setCode(
+                saved ||
+                  selectedProblem.functionSignature[newLang] ||
+                  languageTemplates[newLang]
+              );
             }}
           />
           <CodeEditor
