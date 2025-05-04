@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import languageTemplates from "../languageTemplates"; // Import the language templates
 import CodeEditor from "@monaco-editor/react";
 import "./CodeEditor.css";
@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { executeCode } from "./api";
 import { testCases } from "../testCases";
+import { useNavigate } from "react-router-dom";
 
 const CodeEditorComponent = () => {
   const [showResult, setShowResult] = useState(false);
@@ -28,6 +29,8 @@ const CodeEditorComponent = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const editorRef = useRef();
+  const navigate = useNavigate();
+  const [ques, setQues] = useState("");
 
   const onMount = (editor) => {
     editorRef.current = editor;
@@ -105,9 +108,12 @@ const CodeEditorComponent = () => {
       setIsLoading(false);
     }
   };
-
   const handleSubmit = () => {
-    console.log("Submit clicked");
+    const questionText =
+      "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.";
+
+    setQues(questionText);
+    navigate("/roadmap", { state: { code, ques: questionText } });
   };
 
   return (

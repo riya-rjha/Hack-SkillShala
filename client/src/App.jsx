@@ -9,8 +9,7 @@ import Roadmap from "./components/Roadmap.jsx";
 import CodeEditor from "./components/CodeEditor.jsx";
 import LoginPage from "./pages/Login.jsx";
 import SignupPage from "./pages/SignupPage.jsx";
-import { UserProvider } from './context/UserContext';
-import Dashboard from "./components/Dashboard.jsx"
+import PersonalizedRoadmap from "./pages/PersonalizedRoadmap.jsx";
 
 const App = () => {
   return (
@@ -35,11 +34,7 @@ const App = () => {
       <Route
         path="/roadmap"
         element={
-          <UserProvider>
-            <div className="min-h-screen bg-slate-50">
-              <Dashboard />
-            </div>
-          </UserProvider>
+          <PersonalizedRoadmap></PersonalizedRoadmap>
         }
       />
     </Routes>
