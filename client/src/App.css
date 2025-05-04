@@ -11,6 +11,10 @@
   display: flex;
   flex-grow: 1;
 }
+.font-poppins{
+  font-family: "poppins";
+}
+
 @media (max-width: 768px) {
   * {
     font-size: 0.9rem;

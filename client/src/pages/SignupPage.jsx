@@ -28,24 +28,24 @@ const RegisterPage = () => {
     }
   };
   return (
-    <div className="h-screen bg-[#1a133a] text-white flex flex-col font-['Montserrat_Alternates']">
+    <div className="h-screen bg-[#1a133a] text-white flex flex-col font-poppins">
       {/* Navbar */}
       <Navbar />
 
       {/* Registration Form - flex-grow area */}
       <div className="flex-1 flex items-center justify-center px-4">
-        <div className="bg-white text-black w-full max-w-md rounded-2xl shadow-xl p-8">
+        <div className="bg-white text-black w-full max-w-md rounded-2xl shadow-xl pa flex flex-col justify-center items-center gap-4" style={{padding: "15px"}}>
           <div className="flex flex-col items-center mb-6">
-            <div className="w-24 h-24 rounded-full bg-[#1a2b44] mb-4" />
+            <div className="w-24 h-24 rounded-full bg-[#1a2b44]" />
             <h2 className="text-2xl font-bold">AarogyaShala</h2>
             <p className="text-center text-gray-500 text-sm mt-1">
               Learn Smarter. Grow Faster. <br /> Powered by AI & Us.
             </p>
           </div>
 
-          <form className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
+          <form className="w-[85%]">
+            <div style={{paddingBottom: "10px"}}>
+              <label className="block text-sm font-medium mb-1" style={{paddingLeft: "10px"}}>Name</label>
               <input
                 onChange={(e) => {
                   setName(e.target.value);
@@ -55,7 +55,7 @@ const RegisterPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1" style={{paddingLeft: "10px"}}>
                 Email Address
               </label>
               <input
@@ -67,7 +67,7 @@ const RegisterPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
+              <label className="block text-sm font-medium mb-1" style={{paddingLeft: "10px"}}>Password</label>
               <input
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
