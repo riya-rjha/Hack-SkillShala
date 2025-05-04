@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import "./Navbar.css";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -25,6 +25,8 @@ const Navbar = () => {
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
   };
+
+  const username = localStorage.getItem("username");
 
   const navItems = ["About Us", "Services", "Roadmap", "Free Test"];
 
@@ -52,24 +54,30 @@ const Navbar = () => {
           )}
 
           {/* Right - Login & Hamburger Menu */}
-          <Box className="login-box">
-            {!isMobile ? (
-              <Link to='/login'>
-              <Button variant="contained" className="login-button">
-                Student Login
-              </Button>
-              </Link>
-            ) : (
-              <IconButton
-                edge="end"
-                color="inherit"
-                aria-label="menu"
-                onClick={toggleDrawer(true)}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
-          </Box>
+          {username != undefined ? (
+            <Box className="login-box">
+              {!isMobile ? (
+                <Link to="/login">
+                  <Button variant="contained" className="login-button">
+                    Student Login
+                  </Button>
+                </Link>
+              ) : (
+                <IconButton
+                  edge="end"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={toggleDrawer(true)}
+                >
+                  <MenuIcon />
+                </IconButton>
+              )}
+            </Box>
+          ) : (
+            <Link to="/login">
+              <p>Login first</p>
+            </Link>
+          )}
         </Toolbar>
       </AppBar>
 

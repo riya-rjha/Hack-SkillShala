@@ -293,8 +293,8 @@ public class Main {
                   variant="body1"
                   sx={{ marginBottom: 2, fontStyle: "italic" }}
                 >
-                  Note: Write only the Solution class with the twoSum method. Do
-                  not include main or Scanner code.
+                  <strong>Note</strong>: Write only the Solution class with the twoSum method. Do
+                  not include main or Scanner code in all languages except for Java. In Java, add a main class of public static void main, rest use normal functions.
                 </Typography>
                 <Typography
                   variant="h6"
