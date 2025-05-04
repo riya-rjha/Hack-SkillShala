@@ -20,8 +20,9 @@ const RegisterPage = () => {
         password,
       });
       console.log(response);
+      localStorage.setItem("username", name);
       localStorage.setItem("token", response.data.token);
-      navigate("/");
+      navigate("/login");
     } catch (e) {
       alert("Service Down");
       console.log(e);

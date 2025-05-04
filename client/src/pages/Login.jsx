@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Navbar from '../components/Navbar';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Navbar from "../components/Navbar";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,10 +13,12 @@ const LoginPage = () => {
     try {
       const response = await axios.post("http://localhost:8080/user/login", {
         email,
-        password
+        password,
       });
+      localStorage.setItem("username", response.data.name);
       localStorage.setItem("token", response.data.token);
-      navigate('/');
+      console.log(response);
+      navigate("/");
     } catch (e) {
       alert("Service Down");
       console.log(e);
@@ -26,7 +28,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-[#1A1440] flex flex-col font-['Montserrat_Alternates']">
       {/* Navbar */}
-      <Navbar/>
+      <Navbar />
 
       {/* Login Card */}
       <div className="flex-grow flex items-center justify-center p-4">
