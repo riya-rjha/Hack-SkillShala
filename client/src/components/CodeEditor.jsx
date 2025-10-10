@@ -36,6 +36,10 @@ const CodeEditorComponent = () => {
   const navigate = useNavigate();
   const [ques, setQues] = useState(selectedProblem.description);
 
+  // NEW AI CODE HAS BEEN ADDED HERE: State for Gemini AI Analysis
+  const [analysis, setAnalysis] = useState("");
+  const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
+
   const onMount = (editor) => {
     editorRef.current = editor;
     editor.focus();
@@ -55,12 +59,10 @@ const CodeEditorComponent = () => {
     }
   };
 
-  // Validate user's Java code
   const isValidJavaCode = (code) => {
     return code.includes("public int[] twoSum(int[] nums, int target)");
   };
 
-  // Generate test harness to run the user's function against test cases
   const wrapUserCode = (code, language, testCases) => {
     if (language === "javascript") {
       let harness = `
@@ -85,14 +87,12 @@ console.log(JSON.stringify(results));
 `;
       return harness;
     } else if (language === "java") {
-      // Prepare input string for Scanner (simulate System.in)
       let inputString = "";
       testCases.forEach((testCase) => {
         const { nums, target } = testCase.input;
         inputString += `${nums.length}\n${nums.join(" ")}\n${target}\n`;
       });
 
-      // Test harness for Java
       const harness = `
 import java.util.*;
 ${code}
@@ -101,15 +101,14 @@ public class Main {
     Scanner scanner = new Scanner(System.in);
     List<String> results = new ArrayList<>();
     
-    // Process all test cases
     try {
       for (int t = 0; t < ${testCases.length}; t++) {
-        int n = scanner.nextInt(); // Read array length
+        int n = scanner.nextInt(); 
         int[] nums = new int[n];
         for (int i = 0; i < n; i++) {
-          nums[i] = scanner.nextInt(); // Read array elements
+          nums[i] = scanner.nextInt();
         }
-        int target = scanner.nextInt(); // Read target
+        int target = scanner.nextInt();
         Solution sol = new Solution();
         int[] result = sol.twoSum(nums, target);
         results.add("[" + result[0] + "," + result[1] + "]");
@@ -118,7 +117,6 @@ public class Main {
       results.add("Error: " + e.getMessage());
     }
     
-    // Output results as JSON array
     System.out.println(results.toString().replace(" ", ""));
   }
 }
@@ -136,7 +134,6 @@ public class Main {
       return;
     }
 
-    // Validate Java code
     if (language === "java" && !isValidJavaCode(userCode)) {
       setOutput(
         "Error: Please provide a valid Solution class with a twoSum method."
@@ -152,7 +149,6 @@ public class Main {
       const results = [];
       const testCases = selectedProblem.testCases;
 
-      // Wrap the user's code
       const wrapped = wrapUserCode(userCode, language, testCases);
       let sourceCode = wrapped;
       let stdin = "";
@@ -162,11 +158,9 @@ public class Main {
         stdin = wrapped.stdin;
       }
 
-      // Execute the wrapped code
       const { run } = await executeCode(language, sourceCode, stdin);
       const outputs = parseOutput(run.output);
 
-      // Compare each test case result
       testCases.forEach((testCase, i) => {
         const actual = Array.isArray(outputs) ? outputs[i] : outputs;
         let parsedActual;
@@ -180,7 +174,6 @@ public class Main {
         results.push({ ...testCase, actual: parsedActual, passed });
       });
 
-      // Format the output
       setOutput(
         results
           .map(
@@ -201,6 +194,41 @@ public class Main {
       setShowResult(true);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // NEW AI CODE HAS BEEN ADDED HERE: Function to call your backend for Gemini AI analysis
+  const handleCodeAnalysis = async () => {
+    const userCode = editorRef.current.getValue();
+    if (!userCode) {
+      setAnalysis("Please write some code before requesting an analysis.");
+      return;
+    }
+
+    setIsAnalysisLoading(true);
+    setAnalysis("");
+
+    try {
+      const response = await fetch("http://localhost:8080/gemini/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          problem: selectedProblem.title,
+          userCode: userCode,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setAnalysis(data.analysis);
+      } else {
+        setAnalysis(`Error from server: ${data.error}`);
+      }
+    } catch (error) {
+      setAnalysis("Failed to connect to the analysis server. Make sure it's running.");
+    } finally {
+      setIsAnalysisLoading(false);
     }
   };
 
@@ -230,7 +258,6 @@ public class Main {
               SkillShala
             </Typography>
           </Box>
-
           <Box
             display="flex"
             alignItems="center"
@@ -250,7 +277,6 @@ public class Main {
               for your test [Name_of_candidate]
             </Typography>
           </Box>
-
           <Button
             variant="contained"
             sx={{
@@ -293,8 +319,7 @@ public class Main {
                   variant="body1"
                   sx={{ marginBottom: 2, fontStyle: "italic" }}
                 >
-                  <strong>Note</strong>: Write only the Solution class with the twoSum method. Do
-                  not include main or Scanner code in all languages except for Java. In Java, add a main class of public static void main, rest use normal functions.
+                  <strong>Note</strong>: Write only the Solution class with the twoSum method. Do not include main or Scanner code in all languages except for Java. In Java, add a main class of public static void main, rest use normal functions.
                 </Typography>
                 <Typography
                   variant="h6"
@@ -382,6 +407,18 @@ public class Main {
             >
               Run
             </LoadingButton>
+
+            {/* NEW AI CODE HAS BEEN ADDED HERE: AI Analysis Button */}
+            <LoadingButton
+              variant="contained"
+              color="secondary"
+              onClick={handleCodeAnalysis}
+              loading={isAnalysisLoading}
+              sx={{ textTransform: "none", fontWeight: "bold" }}
+            >
+              Analyze with AI
+            </LoadingButton>
+
             <LoadingButton
               variant="contained"
               color="primary"
@@ -408,6 +445,26 @@ public class Main {
               {output || "Output will be shown here!"}
             </Paper>
           </Slide>
+          
+          {/* NEW AI CODE HAS BEEN ADDED HERE: Display area for the AI Analysis result */}
+          {analysis && (
+            <Paper
+              elevation={6}
+              sx={{
+                padding: 2,
+                marginTop: 2,
+                backgroundColor: "#fffbe6", 
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                textAlign: "left"
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: 1 }}>
+                🤖 AI Analysis:
+              </Typography>
+              <Typography component="div">{analysis}</Typography>
+            </Paper>
+          )}
         </div>
       </div>
     </div>

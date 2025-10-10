@@ -1,8 +1,15 @@
+import path from 'path';
+import dotenv from 'dotenv';
+
+// Force dotenv to load the .env file from the current directory
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
 import express from 'express';
 import connectDB from './db/index.js';
 import cors from 'cors';
 import authRouter from "./routes/auth.js";
-import testRouter from "./routes/testRoute.js"; // ✅ import testRoute
+import testRouter from "./routes/testRoute.js";
+import geminiRouter from "./routes/gemini.js";
 
 const app = express();
 app.use(cors({
@@ -11,7 +18,8 @@ app.use(cors({
 }));
 app.use(express.json());
 
-connectDB();
+// This will now run with the correct environment variables loaded
+connectDB(); 
 
 const port = process.env.PORT || 8080;
 
@@ -20,7 +28,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/user", authRouter);
-app.use("/test", testRouter); // ✅ register testRoute
+app.use("/test", testRouter);
+app.use("/gemini", geminiRouter);
 
 app.listen(port, () => {
   console.log(`App is listening at http://localhost:${port}`);
