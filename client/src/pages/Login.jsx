@@ -34,7 +34,7 @@ const LoginPage = () => {
       <div className="flex-grow flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-lg px-8 h-full w-full max-w-md text-center flex flex-col justify-center items-center gap-4 " style={{padding: "15px"}}>
           <div className="w-24 h-24 mx-auto bg-[#1A2B4C] rounded-full mb-4  border-2 border-red-500"></div>
-          <h2 className="text-2xl font-bold mb-1">AarogyaShala</h2>
+          <h2 className="text-2xl font-bold mb-1">SkillShala</h2>
           <p className="text-gray-500 mb-6 text-sm">Learn Smarter. Grow Faster. Powered by AI & Us.</p>
 
           <form className="w-[85%] text-left" onSubmit={handleLogin}>
