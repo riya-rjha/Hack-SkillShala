@@ -1,8 +1,14 @@
 import express from "express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { Ques } from "../models/ques.js";
 import { Test } from "../models/test.js";
 
 const router = express.Router();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Start a new test
 router.post("/", async (req, res) => {
@@ -96,6 +102,38 @@ router.post("/:topic/submit", async (req, res) => {
             error: error.message
         });
     }
+});
+
+router.post("/save-submission", async (req, res) => {
+  try {
+    const submissions = req.body;
+    console.log("📩 Received submissions:", submissions);
+
+    // Folder and file path inside your project
+    const submissionsDir = path.join(__dirname, "../../../ai-demo/submissions");
+    const filePath = path.join(submissionsDir, "submitted_test.json");
+
+    // Ensure folder exists
+    fs.mkdirSync(submissionsDir, { recursive: true });
+
+    // Write JSON file
+    fs.writeFileSync(filePath, JSON.stringify(submissions, null, 2));
+
+    console.log("✅ Submissions saved at:", filePath);
+
+    res.status(200).json({
+      status: "success",
+      message: "Submission saved successfully!",
+      path: filePath,
+    });
+  } catch (err) {
+    console.error("❌ Failed to save submissions:", err);
+    res.status(500).json({
+      status: "fail",
+      message: "Failed to save submission.",
+      error: err.message,
+    });
+  }
 });
 
 export default router;
