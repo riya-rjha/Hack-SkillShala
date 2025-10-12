@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "user_code": "for i in range(len(nums)): for j in range(len(nums)): if i != j and nums[i] + nums[j] == target: return [i, j]",
+    "problem_title": "Two Sum"
+  },
+  {
+    "id": 2,
+    "user_code": "prev = None\nwhile head.next:\n  temp = head.next\n  head.next = prev\n  prev = head\n  head = temp\nreturn prev",
+    "problem_title": "Reverse a Linked List"
+  }
+]
