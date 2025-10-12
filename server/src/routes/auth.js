@@ -32,7 +32,7 @@ router.post('/signup', async (req, res) => {
 
     const token = jwt.sign(
       { id: newUser._id, email },
-      process.env.JWT_SECRET,
+      "jnv-secret",
       { expiresIn: "7d" }
     );
 
@@ -65,7 +65,7 @@ router.post('/signup', async (req, res) => {
 //     const hashedPassword = await bcrypt.hash(password, 10);
 //     const newUser = await User.create({ name, email, password: hashedPassword });
 
-//     const token = jwt.sign({ id: newUser._id, email }, process.env.JWT_SECRET);
+//     const token = jwt.sign({ id: newUser._id, email }, "jnv-secret");
 
 //     return res.status(201).json({ message: 'Signup successful!', token, name: name });
 //   } catch (error) {
@@ -92,7 +92,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
+      "jnv-secret",
       { expiresIn: "7d" }
     );
 
@@ -117,7 +117,7 @@ router.post('/login', async (req, res) => {
 //     const isMatch = await bcrypt.compare(password, user.password);
 //     if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
-//     const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+//     const token = jwt.sign({ id: user._id, email: user.email }, "jnv-secret");
 
 //     // Send back name too
 //     return res.status(200).json({

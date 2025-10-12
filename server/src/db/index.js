@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import dotenv from 'dotenv';
 dotenv.config();
 
-const CONNECTION_STRING = process.env.CONNECTION_STRING
+const CONNECTION_STRING = "mongodb+srv://botchat137_db_user:3dMJWsZv3JQUa73o@skill-shala.tutbqzz.mongodb.net/?retryWrites=true&w=majority&appName=skill-shala"
 
 const connectDB = async() => {
     try{
