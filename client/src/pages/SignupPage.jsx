@@ -20,21 +20,41 @@ const RegisterPage = () => {
   const [email, setEmail] = useState("");
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
+
+    if (!name || !email || !password) {
+      alert("Please fill in all the required fields.");
+      return;
+    }
+
     try {
       const response = await axios.post("http://localhost:8080/user/signup", {
         name,
         email,
         password,
       });
-      localStorage.setItem("username", name);
-      localStorage.setItem("token", response.data.token);
-      navigate("/");
-    } catch (e) {
-      alert("Can't Signin");
-      console.error(e);
+
+      if (response?.data?.token) {
+        localStorage.setItem("username", name);
+        localStorage.setItem("token", response.data.token);
+
+        alert("Signup successful! Redirecting to home...");
+        navigate("/"); 
+      } else {
+        alert("Signup failed: No token received from server.");
+        console.error("No token received:", response.data);
+      }
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Something went wrong during signup.";
+      alert(`Signup failed: ${message}`);
+      console.error("Signup error:", error);
+    } finally {
     }
   };
+
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#1a133a", color: "white", display: "flex", flexDirection: "column", fontFamily: "Poppins" }}>

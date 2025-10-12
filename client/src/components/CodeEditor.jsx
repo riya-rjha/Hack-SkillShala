@@ -17,6 +17,7 @@ import LanguageSelector from "./LanguageSelector";
 import problems from "../data.json";
 import languageTemplates from "../languageTemplates";
 import "./CodeEditor.css";
+import axios from "axios";
 
 const CodeEditorComponent = () => {
   const [showResult, setShowResult] = useState(false);
@@ -149,14 +150,54 @@ const CodeEditorComponent = () => {
     }
   };
 
-  const handleSubmit = () => {
-    if (window.confirm("Are you sure you want to submit the test?")) {
+  const handleSubmitTest = async () => {
+    if (!window.confirm("Are you sure you want to submit the test?")) return;
+
+  // Gather submitted codes
+  const submittedData = selectedQuestions.map((q) => {
+    const savedCode = localStorage.getItem(`submitted_code_${q.id}`) || "";
+    return {
+      questionId: q.id,
+      title: q.title,
+      userSolution: savedCode,
+    };
+  });
+
+  console.log(submittedData);
+  try {
+    const response = await axios.post("http://localhost:8080/test/save-submission", submittedData, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (response.status === 200) {
+      alert("✅ Test submitted successfully!");
+      clearTestData();
       navigate("/roadmap", {
         state: { code, ques: selectedProblem.description },
       });
-      clearTestData();
+    } else {
+      alert("⚠️ Something went wrong while submitting the test.");
     }
+  } catch (error) {
+    console.error("❌ Submission error:", error);
+    alert("Failed to submit test. Please try again later.");
+  }
+    // if (window.confirm("Are you sure you want to submit the test?")) {
+    //   navigate("/roadmap", {
+    //     state: { code, ques: selectedProblem.description },
+    //   });
+    //   clearTestData();
+    // }
   };
+
+  const handleSubmitCode = () => {
+  if (!selectedProblem) return;
+
+  const submittedCodeKey = `submitted_code_${selectedProblem.id}`;
+  localStorage.setItem(submittedCodeKey, code);
+
+  alert(`Code submitted for problem ID: ${selectedProblem.id}`);
+};
 
   return (
     <div>
@@ -244,7 +285,7 @@ const CodeEditorComponent = () => {
                 fontWeight: "bold",
                 "&:hover": { backgroundColor: "#00b89c" },
               }}
-              onClick={handleSubmit}
+              onClick={handleSubmitTest}
             >
               Submit Test
             </Button>
@@ -353,7 +394,7 @@ const CodeEditorComponent = () => {
             <LoadingButton
               variant="contained"
               color="primary"
-              onClick={handleSubmit}
+              onClick={handleSubmitCode}
               sx={{ textTransform: "none", fontWeight: "bold" }}
             >
               Submit
