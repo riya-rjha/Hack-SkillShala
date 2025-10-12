@@ -58,15 +58,25 @@ app.post('/analyze', async (req, res) => {
     let analysisText = response.text();
 
     // Clean the response to ensure it's a valid JSON string
+    // Clean the response to ensure it's a valid JSON string
     const startIndex = analysisText.indexOf('{');
     const endIndex = analysisText.lastIndexOf('}');
     if (startIndex !== -1 && endIndex !== -1) {
       analysisText = analysisText.substring(startIndex, endIndex + 1);
     }
 
-    const analysisJson = JSON.parse(analysisText);
+    try {
+      const analysisJson = JSON.parse(analysisText);
+      res.json(analysisJson);
+    } catch (parseError) {
+      console.error("❌ JSON Parse Error:", parseError.message);
+      console.error("Raw model output:", analysisText);
+      return res.status(500).json({
+        error: "Model returned invalid JSON.",
+        details: parseError.message,
+      });
+    }
 
-    res.json(analysisJson);
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Something went wrong during analysis' });

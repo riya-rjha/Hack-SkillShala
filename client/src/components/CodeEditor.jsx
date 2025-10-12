@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-case-declarations */
 import React, { useState, useRef, useEffect } from "react";
 import CodeEditor from "@monaco-editor/react";
 import {
@@ -18,6 +20,224 @@ import problems from "../data.json";
 import languageTemplates from "../languageTemplates";
 import "./CodeEditor.css";
 import axios from "axios";
+
+// Extract function name from code
+const extractFunctionName = (code, language) => {
+  let match;
+  switch (language) {
+    case "javascript":
+      match = code.match(/function\s+(\w+)\s*\(/) || code.match(/const\s+(\w+)\s*=/);
+      break;
+    case "python":
+      match = code.match(/def\s+(\w+)\s*\(/);
+      break;
+    case "java":
+      match = code.match(/public\s+\w+(?:\[\])?\s+(\w+)\s*\(/);
+      break;
+    case "cpp":
+      match = code.match(/\w+(?:\s*\*)?\s+(\w+)\s*\(/);
+      break;
+    default:
+      return null;
+  }
+  return match ? match[1] : null;
+};
+
+// Generate dynamic wrapper based on problem input/output structure
+const wrapUserCode = (userCode, language, testCases, problemId) => {
+  // Extract function name from user's code
+  const functionName = extractFunctionName(userCode, language);
+  
+  if (!functionName) {
+    throw new Error("Could not detect function name. Please ensure your function is properly defined.");
+  }
+
+  // Detect input structure from first test case
+  const firstTest = testCases[0];
+  const inputKeys = Object.keys(firstTest.input);
+  
+  switch (language) {
+    case "javascript":
+      // Build function call dynamically based on input keys
+      const jsParams = inputKeys.map(key => `tc.input.${key}`).join(", ");
+      
+      return `
+${userCode}
+
+// Test execution
+const testCases = ${JSON.stringify(testCases)};
+const results = testCases.map(tc => {
+  try {
+    const result = ${functionName}(${jsParams});
+    return JSON.stringify(result);
+  } catch (e) {
+    return JSON.stringify({ error: e.message });
+  }
+});
+console.log(results.join('\\n---\\n'));
+`;
+
+    case "python":
+      const pyParams = inputKeys.map(key => `tc['input']['${key}']`).join(", ");
+      
+      return `
+${userCode}
+
+import json
+
+test_cases = ${JSON.stringify(testCases)}
+results = []
+for tc in test_cases:
+    try:
+        result = ${functionName}(${pyParams})
+        results.append(json.dumps(result))
+    except Exception as e:
+        results.append(json.dumps({'error': str(e)}))
+
+print('\\n---\\n'.join(results))
+`;
+
+    case "java":
+      // Extract only the method from user code
+      let methodCode = userCode;
+      
+      // Remove class wrapper if present
+      if (userCode.includes("public class") || userCode.includes("class Solution")) {
+        // Try to extract just the method(s)
+        const classContentMatch = userCode.match(/class\s+\w+\s*\{([\s\S]*)\}/);
+        if (classContentMatch) {
+          methodCode = classContentMatch[1].trim();
+          // Remove main method if present
+          methodCode = methodCode.replace(/public\s+static\s+void\s+main\s*\([^)]*\)\s*\{[\s\S]*?\}\s*(?=public|private|\}|$)/g, '');
+        }
+      }
+
+      // Create stdin input based on test case structure
+      // eslint-disable-next-line no-case-declarations
+      const testInputs = testCases
+        .map((tc) => {
+          return JSON.stringify(tc.input);
+        })
+        .join("\n");
+
+      return {
+        sourceCode: `
+import java.util.*;
+import com.google.gson.*;
+
+public class Solution {
+${methodCode}
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Solution solution = new Solution();
+        Gson gson = new Gson();
+        
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine().trim();
+            if (line.isEmpty()) continue;
+            
+            try {
+                JsonObject input = gson.fromJson(line, JsonObject.class);
+                
+                // Call function with dynamic parameters
+                Object result = solution.${functionName}(/* parse inputs from JSON */);
+                System.out.println(gson.toJson(result));
+                System.out.println("---");
+            } catch (Exception e) {
+                System.out.println("{\\"error\\": \\"" + e.getMessage() + "\\"}");
+                System.out.println("---");
+            }
+        }
+        scanner.close();
+    }
+}
+`,
+        stdin: testInputs,
+      };
+
+    case "cpp":
+    testCases.map(tc => JSON.stringify(tc)).join(",\n");
+      
+      return `
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+using namespace std;
+
+${userCode}
+
+int main() {
+    // Test cases will be executed here
+    // Implementation depends on input/output types
+    
+    cout << "CPP execution - Please use JavaScript or Python for now" << endl;
+    return 0;
+}
+`;
+
+    default:
+      return userCode;
+  }
+};
+
+// Helper function to parse output from code execution
+const parseOutput = (output) => {
+  if (!output) return [];
+
+  // Split by delimiter and clean up
+  const parts = output
+    .split("---")
+    .map((s) => s.trim())
+    .filter((s) => s);
+
+  return parts.map((part) => {
+    let cleaned;
+    try {
+       cleaned = part.trim();
+      return JSON.parse(cleaned);
+    } catch {
+      // If JSON parsing fails, try to extract array from string
+      const match = cleaned.match(/\[([^\]]*)\]/);
+      if (match) {
+        try {
+          return JSON.parse(`[${match[1]}]`);
+        } catch {
+          // Return as string if all parsing fails
+          return cleaned;
+        }
+      }
+      return cleaned;
+    }
+  });
+};
+
+// Helper function to compare values (handles arrays, objects, primitives)
+const valuesEqual = (a, b) => {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!valuesEqual(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  
+  if (typeof a === 'object' && typeof b === 'object') {
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length) return false;
+    for (let key of keysA) {
+      if (!valuesEqual(a[key], b[key])) return false;
+    }
+    return true;
+  }
+  
+  return false;
+};
 
 const CodeEditorComponent = () => {
   const [showResult, setShowResult] = useState(false);
@@ -42,21 +262,32 @@ const CodeEditorComponent = () => {
     const saved = localStorage.getItem(`code_${language}_${currentQIndex}`);
     return (
       saved ||
-      selectedProblem.functionSignature[language] ||
+      selectedProblem.functionSignature?.[language] ||
       "// Write your code here"
     );
   });
 
   // Update code when currentQIndex or language changes
   useEffect(() => {
+    // First check if there's submitted code for this question
+    const submittedCode = localStorage.getItem(`submitted_code_${selectedProblem.id}`);
+    
+    // Then check language-specific saved code
     const saved = localStorage.getItem(`code_${language}_${currentQIndex}`);
+    
+    // Priority: submitted code > saved code > function signature > template
     setCode(
+      submittedCode ||
       saved ||
-        (selectedProblem.functionSignature
-          ? selectedProblem.functionSignature[language]
-          : languageTemplates[language]) ||
-        "// Write your code here"
+      (selectedProblem.functionSignature
+        ? selectedProblem.functionSignature[language]
+        : languageTemplates?.[language]) ||
+      "// Write your code here"
     );
+    
+    // Clear output when switching questions
+    setShowResult(false);
+    setOutput(null);
   }, [currentQIndex, language, selectedProblem]);
 
   const onMount = (editor) => {
@@ -79,7 +310,7 @@ const CodeEditorComponent = () => {
       const results = [];
       const testCases = selectedProblem.testCases;
 
-      const wrapped = wrapUserCode(userCode, language, testCases);
+      const wrapped = wrapUserCode(userCode, language, testCases, selectedProblem.id);
       let sourceCode = wrapped;
       let stdin = "";
 
@@ -89,33 +320,44 @@ const CodeEditorComponent = () => {
       }
 
       const { run } = await executeCode(language, sourceCode, stdin);
+      
+      // Check for compilation/runtime errors
+      if (run.stderr && run.stderr.trim()) {
+        setOutput(`Error:\n${run.stderr}`);
+        setShowResult(true);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!run.output || run.output.trim() === "") {
+        setOutput("Error: No output received. Please check your code.");
+        setShowResult(true);
+        setIsLoading(false);
+        return;
+      }
+
       const outputs = parseOutput(run.output);
 
+      // Build results comparing actual vs expected
       testCases.forEach((testCase, i) => {
-        const actual = Array.isArray(outputs) ? outputs[i] : outputs;
-        let parsedActual;
-        try {
-          parsedActual =
-            typeof actual === "string" ? JSON.parse(actual) : actual;
-        } catch {
-          parsedActual = actual;
-        }
-        const passed = arraysEqual(parsedActual, testCase.expected);
-        results.push({ ...testCase, actual: parsedActual, passed });
+        const actual = outputs[i];
+        const passed = valuesEqual(actual, testCase.expected);
+        results.push({ ...testCase, actual, passed });
       });
 
+      // Format output
+      const inputKeys = Object.keys(testCases[0].input);
       setOutput(
         results
-          .map(
-            (r, i) =>
+          .map((r, i) => {
+            const inputStr = inputKeys.map(key => `${key}=${JSON.stringify(r.input[key])}`).join(", ");
+            return (
               `Test Case ${i + 1}: ${r.passed ? "✅ Passed" : "❌ Failed"}\n` +
-              `Input: nums=${JSON.stringify(r.input.nums)}, target=${
-                r.input.target
-              }\n` +
-              `Expected: ${JSON.stringify(r.expected)} | Got: ${JSON.stringify(
-                r.actual
-              )}\n`
-          )
+              `Input: ${inputStr}\n` +
+              `Expected: ${JSON.stringify(r.expected)}\n` +
+              `Got: ${JSON.stringify(r.actual)}`
+            );
+          })
           .join("\n\n")
       );
       setShowResult(true);
@@ -131,10 +373,18 @@ const CodeEditorComponent = () => {
     localStorage.removeItem("selectedTopic");
     localStorage.removeItem("selectedLevel");
 
-    Object.keys(languageTemplates).forEach((lang) => {
-      selectedQuestions?.forEach((_, idx) => {
-        localStorage.removeItem(`code_${lang}_${idx}`);
+    // Clear all code caches
+    if (languageTemplates) {
+      Object.keys(languageTemplates).forEach((lang) => {
+        selectedQuestions?.forEach((_, idx) => {
+          localStorage.removeItem(`code_${lang}_${idx}`);
+        });
       });
+    }
+
+    // Clear all submitted codes
+    selectedQuestions?.forEach((q) => {
+      localStorage.removeItem(`submitted_code_${q.id}`);
     });
 
     setCode("");
@@ -165,15 +415,19 @@ const CodeEditorComponent = () => {
 
     console.log(submittedData);
     try {
-      const response = await axios.post("http://localhost:8080/test/save-submission", submittedData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axios.post(
+        "http://localhost:8080/test/save-submission",
+        submittedData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       if (response.status === 200) {
         alert("✅ Test submitted successfully!");
         clearTestData();
         navigate("/analysis", {
-          state: {submittedData},
+          state: { submittedData },
         });
       } else {
         alert("⚠️ Something went wrong while submitting the test.");
@@ -185,13 +439,14 @@ const CodeEditorComponent = () => {
   };
 
   const handleSubmitCode = () => {
-  if (!selectedProblem) return;
+    if (!selectedProblem) return;
 
-  const submittedCodeKey = `submitted_code_${selectedProblem.id}`;
-  localStorage.setItem(submittedCodeKey, code);
+    const currentCode = editorRef.current.getValue();
+    const submittedCodeKey = `submitted_code_${selectedProblem.id}`;
+    localStorage.setItem(submittedCodeKey, currentCode);
 
-  alert(`Code submitted for problem ID: ${selectedProblem.id}`);
-};
+    alert(`✅ Code submitted for: ${selectedProblem.title}`);
+  };
 
   return (
     <div>
@@ -244,7 +499,12 @@ const CodeEditorComponent = () => {
           >
             <Typography
               variant="body1"
-              sx={{ fontSize: "0.95rem", fontWeight: 500, opacity: 0.9, mb: 0.5 }}
+              sx={{
+                fontSize: "0.95rem",
+                fontWeight: 500,
+                opacity: 0.9,
+                mb: 0.5,
+              }}
             >
               Topic: {topic || "N/A"} | Level: {level || "N/A"}
             </Typography>
@@ -299,32 +559,45 @@ const CodeEditorComponent = () => {
               sx={{ backgroundColor: "#f5f5f5", padding: 3, overflowY: "auto" }}
             >
               {/* Question Tabs */}
-              <Box display="flex" gap={2} pb={2} sx={{borderBottom: "1px solid grey"}}>
-                {selectedQuestions?.map((_, idx) => (
-                  <Box
-                    key={idx}
-                    onClick={() => setCurrentQIndex(idx)}
-                    sx={{
-                      width: 35,
-                      height: 35,
-                      borderRadius: "50%",
-                      backgroundColor: idx === currentQIndex ? "#00cba9" : "#ccc",
-                      color: idx === currentQIndex ? "#fff" : "#000",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                      userSelect: "none",
-                    }}
-                  >
-                    {idx + 1}
-                  </Box>
-                ))}
+              <Box
+                display="flex"
+                gap={2}
+                pb={2}
+                sx={{ borderBottom: "1px solid grey" }}
+              >
+                {selectedQuestions?.map((q, idx) => {
+                  const isSubmitted = localStorage.getItem(`submitted_code_${q.id}`);
+                  return (
+                    <Box
+                      key={idx}
+                      onClick={() => setCurrentQIndex(idx)}
+                      sx={{
+                        width: 35,
+                        height: 35,
+                        borderRadius: "50%",
+                        backgroundColor:
+                          idx === currentQIndex ? "#00cba9" : isSubmitted ? "#4caf50" : "#ccc",
+                        color: idx === currentQIndex || isSubmitted ? "#fff" : "#000",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        userSelect: "none",
+                        border: isSubmitted ? "2px solid #2e7d32" : "none",
+                      }}
+                    >
+                      {idx + 1}
+                    </Box>
+                  );
+                })}
               </Box>
 
               {/* Question Details */}
-              <Paper elevation={0} sx={{ padding: 2, backgroundColor: "#f5f5f5" }}>
+              <Paper
+                elevation={0}
+                sx={{ padding: 2, backgroundColor: "#f5f5f5" }}
+              >
                 <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
                   {selectedProblem.title}
                 </Typography>
@@ -335,7 +608,7 @@ const CodeEditorComponent = () => {
                 <Typography variant="h6" sx={{ fontWeight: "bold", mt: 3 }}>
                   Examples
                 </Typography>
-                {selectedProblem.testCases.map((tc, idx) => (
+                {selectedProblem.testCases?.map((tc, idx) => (
                   <Typography key={idx} variant="body2" sx={{ mt: 1 }}>
                     <strong>Example {idx + 1}:</strong>
                     <br />
@@ -363,7 +636,10 @@ const CodeEditorComponent = () => {
             value={code}
             onChange={(newCode) => {
               setCode(newCode);
-              localStorage.setItem(`code_${language}_${currentQIndex}`, newCode);
+              localStorage.setItem(
+                `code_${language}_${currentQIndex}`,
+                newCode
+              );
             }}
             onMount={onMount}
             theme="vs-light"
