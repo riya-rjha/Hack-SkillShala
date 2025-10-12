@@ -64,10 +64,105 @@ const CodeEditorComponent = () => {
     editor.focus();
   };
 
+  const arraysEqual = (a, b) =>
+    Array.isArray(a) &&
+    Array.isArray(b) &&
+    a.length === b.length &&
+    a.every((val, i) => val === b[i]);
+
+  const parseOutput = (output) => {
+    try {
+      return JSON.parse(output.trim());
+    } catch {
+      return output.trim();
+    }
+  };
+
+  // Validate user's Java code
+  const isValidJavaCode = (code) => {
+    return code.includes("public int[] twoSum(int[] nums, int target)");
+  };
+
+  // Generate test harness to run the user's function against test cases
+  const wrapUserCode = (code, language, testCases) => {
+    if (language === "javascript") {
+      let harness = `
+${code}
+const results = [];
+`;
+
+      testCases.forEach((testCase) => {
+        const { nums, target } = testCase.input;
+        harness += `
+try {
+  const result = twoSum(${JSON.stringify(nums)}, ${target});
+  results.push(JSON.stringify(result));
+} catch (e) {
+  results.push("Error: " + e.message);
+}
+`;
+      });
+
+      harness += `
+console.log(JSON.stringify(results));
+`;
+      return harness;
+    } else if (language === "java") {
+      // Prepare input string for Scanner (simulate System.in)
+      let inputString = "";
+      testCases.forEach((testCase) => {
+        const { nums, target } = testCase.input;
+        inputString += `${nums.length}\n${nums.join(" ")}\n${target}\n`;
+      });
+
+      // Test harness for Java
+      const harness = `
+import java.util.*;
+${code}
+public class Main {
+  public static void main(String[] args) {
+    Scanner scanner = new Scanner(System.in);
+    List<String> results = new ArrayList<>();
+    
+    // Process all test cases
+    try {
+      for (int t = 0; t < ${testCases.length}; t++) {
+        int n = scanner.nextInt(); // Read array length
+        int[] nums = new int[n];
+        for (int i = 0; i < n; i++) {
+          nums[i] = scanner.nextInt(); // Read array elements
+        }
+        int target = scanner.nextInt(); // Read target
+        Solution sol = new Solution();
+        int[] result = sol.twoSum(nums, target);
+        results.add("[" + result[0] + "," + result[1] + "]");
+      }
+    } catch (Exception e) {
+      results.add("Error: " + e.getMessage());
+    }
+    
+    // Output results as JSON array
+    System.out.println(results.toString().replace(" ", ""));
+  }
+}
+`;
+      return { sourceCode: harness, stdin: inputString };
+    }
+    return code;
+  };
+
   const handleRun = async () => {
     const userCode = editorRef.current.getValue();
     if (!userCode) {
       setOutput("Error: No code provided.");
+      setShowResult(true);
+      return;
+    }
+
+    if (language === "java" && !isValidJavaCode(userCode)) {
+      setOutput(
+        "Error: Please provide a valid Solution class with a twoSum method."
+      );
       setShowResult(true);
       return;
     }
