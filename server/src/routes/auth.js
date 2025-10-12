@@ -13,52 +13,123 @@ router.post('/signup', async (req, res) => {
 
   try {
     if (!email || !name || !password) {
-      return res.status(404).json({
+      return res.status(400).json({
         status: "fail",
         message: "All fields are required"
-      })
+      });
     }
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(409).json({ message: 'Email already exists', name: userExists.name },);
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({
+        status: "fail",
+        message: "Email already exists"
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({ name, email, password: hashedPassword });
 
-    const token = jwt.sign({ id: newUser._id, email }, process.env.JWT_SECRET);
+    const token = jwt.sign(
+      { id: newUser._id, email },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    return res.status(201).json({ message: 'Signup successful!', token, name: name });
+    res.status(201).json({
+      status: "success",
+      message: "Signup successful!",
+      token,
+      user: { name: newUser.name, email: newUser.email },
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ status: "error", message: error.message });
   }
 });
 
-// Login Route
+// router.post('/signup', async (req, res) => {
+//   const { name, email, password } = req.body;
+
+//   try {
+//     if (!email || !name || !password) {
+//       return res.status(404).json({
+//         status: "fail",
+//         message: "All fields are required"
+//       })
+//     }
+//     const userExists = await User.findOne({ email });
+//     if (userExists) {
+//       return res.status(409).json({ message: 'Email already exists', name: userExists.name },);
+//     }
+
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const newUser = await User.create({ name, email, password: hashedPassword });
+
+//     const token = jwt.sign({ id: newUser._id, email }, process.env.JWT_SECRET);
+
+//     return res.status(201).json({ message: 'Signup successful!', token, name: name });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// });
+
 // Login Route
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    if (!email || !password) {
+      return res.status(400).json({ status: "fail", message: "All fields are required" });
+    }
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'Email not found' });
+    if (!user)
+      return res.status(404).json({ status: "fail", message: "Email not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!isMatch)
+      return res.status(401).json({ status: "fail", message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    // Send back name too
-    return res.status(200).json({
-      message: 'Login successful',
+    res.status(200).json({
+      status: "success",
+      message: "Login successful",
       token,
-      name: user.name
+      user: { name: user.name, email: user.email },
     });
-
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ status: "error", message: error.message });
   }
 });
+
+// router.post('/login', async (req, res) => {
+//   const { email, password } = req.body;
+
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(404).json({ message: 'Email not found' });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+//     const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+
+//     // Send back name too
+//     return res.status(200).json({
+//       message: 'Login successful',
+//       token,
+//       name: user.name
+//     });
+
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// });
 
 
 export default router;

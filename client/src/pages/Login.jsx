@@ -2,6 +2,15 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
+import {
+  Container,
+  Paper,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Avatar,
+} from "@mui/material";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -9,70 +18,123 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:8080/user/login", {
-        email,
-        password,
-      });
-      localStorage.setItem("username", response.data.name);
-      localStorage.setItem("token", response.data.token);
-      console.log(response);
-      navigate("/");
-    } catch (e) {
-      alert("Service Down");
-      console.log(e);
+  e.preventDefault();
+
+  if (!email || !password) {
+    alert("Please fill in both email and password.");
+    return;
+  }
+
+  try {
+    const response = await axios.post("http://localhost:8080/user/login", {
+      email,
+      password,
+    });
+
+    const { token, user, message } = response.data;
+
+    localStorage.setItem("username", user.name);
+    localStorage.setItem("token", token);
+
+    alert(message || "Login successful!");
+    navigate("/");
+
+  } catch (error) {
+    console.error("Login error:", error);
+
+    if (error.response) {
+      const { status, message } = error.response.data;
+
+      switch (error.response.status) {
+        case 400:
+          alert(message || "All fields are required.");
+          break;
+        case 401:
+          alert(message || "Invalid credentials.");
+          break;
+        case 404:
+          alert(message || "Email not found.");
+          break;
+        default:
+          alert(message || "Something went wrong. Please try again.");
+      }
+    } else if (error.request) {
+      alert("No response from server. Please check your connection.");
+    } else {
+      alert("An unexpected error occurred.");
     }
-  };
+  }
+};
+
 
   return (
-    <div className="min-h-screen bg-[#1A1440] flex flex-col font-['Montserrat_Alternates']">
+    <Box sx={{ minHeight: "100vh", bgcolor: "#1A1440", color: "white", display: "flex", flexDirection: "column", fontFamily: "Montserrat Alternates" }}>
       {/* Navbar */}
       <Navbar />
 
-      {/* Login Card */}
-      <div className="flex-grow flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg px-8 h-full w-full max-w-md text-center flex flex-col justify-center items-center gap-4 " style={{padding: "15px"}}>
-          <div className="w-24 h-24 mx-auto bg-[#1A2B4C] rounded-full mb-4  border-2 border-red-500"></div>
-          <h2 className="text-2xl font-bold mb-1">SkillShala</h2>
-          <p className="text-gray-500 mb-6 text-sm">Learn Smarter. Grow Faster. Powered by AI & Us.</p>
+      {/* Login Form */}
+      <Container sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", py: 4 }}>
+        <Paper sx={{ p: 4, width: "100%", maxWidth: 400, borderRadius: 3, textAlign: "center", bgcolor: "white" }} elevation={6}>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 3 }}>
+            <Avatar
+              sx={{ bgcolor: "#1a2b44", width: 80, height: 80, mb: 2 }}
+            />
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              SkillShala
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              Learn Smarter. Grow Faster. Powered by AI & Us.
+            </Typography>
+          </Box>
 
-          <form className="w-[85%] text-left" onSubmit={handleLogin}>
-            <div style={{paddingBottom: "10px"}}>
-              <label className="block text-sm font-medium mb-1" >Email Address</label>
-              <input
+          <form onSubmit={handleLogin}>
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                fullWidth
+                label="Email Address"
                 type="email"
+                variant="outlined"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 rounded-md bg-[#7fffee] text-black placeholder-gray-700 focus:outline-none"
+                required
               />
-            </div>
-            <div style={{paddingBottom: "10px"}}>
-              <label className="block text-sm font-medium mb-1">Password</label>
-              <input
+            </Box>
+
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                fullWidth
+                label="Password"
                 type="password"
+                variant="outlined"
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 rounded-md bg-[#7fffee] text-black placeholder-gray-700 focus:outline-none"
+                required
               />
-            </div>
-            <p className="text-xs">
-              Don’t have an account?{' '}
-              <span 
-                onClick={() => navigate('/signup')} 
-                className="text-teal-500 font-semibold cursor-pointer hover:underline"
+            </Box>
+
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Don’t have an account?{" "}
+              <Box
+                component="span"
+                sx={{ color: "#00bfb3", fontWeight: 500, cursor: "pointer", textDecoration: "underline", fontSize: "20px" }}
+                onClick={() => navigate("/signup")}
               >
                 Register!
-              </span>
-            </p>
-            <button
+              </Box>
+            </Typography>
+
+            <Button
               type="submit"
-              className="w-full bg-[#7fffee] text-black font-bold py-3 rounded-md hover:bg-teal-200 transition"
+              variant="contained"
+              fullWidth
+              sx={{ bgcolor: "#7fffee", color: "black", fontWeight: "bold", fontSize: "1rem", "&:hover": { bgcolor: "#5fffe0" } }}
             >
               Login
-            </button>
+            </Button>
           </form>
-        </div>
-      </div>
-    </div>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

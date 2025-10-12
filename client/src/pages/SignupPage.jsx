@@ -1,6 +1,15 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
+import {
+  Container,
+  Paper,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Avatar,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import axios from "axios";
 
 const RegisterPage = () => {
@@ -13,90 +22,99 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log(name, email, password);
       const response = await axios.post("http://localhost:8080/user/signup", {
         name,
         email,
         password,
       });
-      console.log(response);
       localStorage.setItem("username", name);
       localStorage.setItem("token", response.data.token);
-      navigate("/login");
+      navigate("/");
     } catch (e) {
-      alert("Service Down");
-      console.log(e);
+      alert("Can't Signin");
+      console.error(e);
     }
   };
+
   return (
-    <div className="h-screen bg-[#1a133a] text-white flex flex-col font-poppins">
+    <Box sx={{ minHeight: "100vh", bgcolor: "#1a133a", color: "white", display: "flex", flexDirection: "column", fontFamily: "Poppins" }}>
       {/* Navbar */}
       <Navbar />
 
-      {/* Registration Form - flex-grow area */}
-      <div className="flex-1 flex items-center justify-center px-4">
-        <div className="bg-white text-black w-full max-w-md rounded-2xl shadow-xl pa flex flex-col justify-center items-center gap-4" style={{padding: "15px"}}>
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-24 h-24 rounded-full bg-[#1a2b44]" />
-            <h2 className="text-2xl font-bold">SkillShala</h2>
-            <p className="text-center text-gray-500 text-sm mt-1">
+      {/* Registration Form */}
+      <Container sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", py: 4 }}>
+        <Paper sx={{ p: 4, width: "100%", maxWidth: 400, borderRadius: 3, textAlign: "center", bgcolor: "white" }} elevation={6}>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 3 }}>
+            <Avatar
+              sx={{ bgcolor: "#1a2b44", width: 80, height: 80, mb: 2 }}
+            />
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              SkillShala
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
               Learn Smarter. Grow Faster. <br /> Powered by AI & Us.
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
-          <form className="w-[85%]">
-            <div style={{paddingBottom: "10px"}}>
-              <label className="block text-sm font-medium mb-1" style={{paddingLeft: "10px"}}>Name</label>
-              <input
-                onChange={(e) => {
-                  setName(e.target.value);
-                }}
-                type="text"
-                className="w-full p-3 bg-[#7fffee] text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#00e5d0]"
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                fullWidth
+                label="Name"
+                variant="outlined"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{paddingLeft: "10px"}}>
-                Email Address
-              </label>
-              <input
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
+            </Box>
+
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                fullWidth
+                label="Email Address"
                 type="email"
-                className="w-full p-3 bg-[#7fffee] text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#00e5d0]"
+                variant="outlined"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{paddingLeft: "10px"}}>Password</label>
-              <input
-                onChange={(e) => setPassword(e.target.value)}
-                type="password"
-                className="w-full p-3 bg-[#7fffee] text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#00e5d0]"
-              />
-            </div>
+            </Box>
 
-            <p className="text-sm text-center">
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                fullWidth
+                label="Password"
+                type="password"
+                variant="outlined"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Box>
+
+            <Typography variant="body2" sx={{ mb: 2 }}>
               Already have an account?{" "}
-              <span
-                className="text-[#00bfb3] font-medium cursor-pointer hover:underline"
+              <Box
+                component="span"
+                sx={{ color: "#00bfb3", fontWeight: 500, cursor: "pointer", textDecoration: "underline", fontSize: "20px" }}
                 onClick={() => navigate("/login")}
               >
                 Login!
-              </span>
-            </p>
+              </Box>
+            </Typography>
 
-            <button
-              onClick={handleSubmit}
+            <Button
               type="submit"
-              className="w-full p-3 bg-[#7fffee] text-black font-bold text-lg rounded-md hover:bg-[#5fffe0] transition"
+              variant="contained"
+              fullWidth
+              sx={{ bgcolor: "#7fffee", color: "black", fontWeight: "bold", fontSize: "1rem", "&:hover": { bgcolor: "#5fffe0" } }}
             >
               Register
-            </button>
+            </Button>
           </form>
-        </div>
-      </div>
-    </div>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

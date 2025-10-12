@@ -10,6 +10,8 @@ import CodeEditor from "./components/CodeEditor.jsx";
 import LoginPage from "./pages/Login.jsx";
 import SignupPage from "./pages/SignupPage.jsx";
 import PersonalizedRoadmap from "./pages/PersonalizedRoadmap.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import TestSetup from "./pages/TestSetup.jsx";
 
 const App = () => {
   return (
@@ -28,7 +30,22 @@ const App = () => {
           </Box>
         }
       />
-      <Route path="/test" element={<CodeEditor />} />
+      <Route
+        path="/test-setup"
+        element={
+          <ProtectedRoute>
+            <TestSetup />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/test"
+        element={
+          <ProtectedRoute>
+            <CodeEditor />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route

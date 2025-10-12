@@ -19,8 +19,8 @@
     "id": 2,
     "title": "Reverse String",
     "description": "Write a function that reverses a string. The input string is given as an array of characters s. You must do this by modifying the input array in-place with O(1) extra memory.",
-    "topic": "Two Pointers, String",
-    "difficulty": "Easy",
+    "topic": "String",
+    "difficulty": "hard",
     "functionSignature": {
       "javascript": "function reverseString(s) {\n  // Your code here\n}",
       "java": "public class Solution {\n  public void reverseString(char[] s) {\n    // Your code here\n  }\n}"
@@ -75,8 +75,8 @@
     "id": 5,
     "title": "Valid Parentheses",
     "description": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if: 1. Open brackets are closed by the same type of brackets. 2. Open brackets are closed in the correct order.",
-    "topic": "Stack, String",
-    "difficulty": "Easy",
+    "topic": "Array, String",
+    "difficulty": "Medium",
     "functionSignature": {
       "javascript": "function isValid(s) {\n  // Your code here\n}",
       "java": "public class Solution {\n  public boolean isValid(String s) {\n    // Your code here\n  }\n}"
@@ -91,8 +91,8 @@
     "id": 6,
     "title": "Climbing Stairs",
     "description": "You are climbing a staircase. It takes n steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?",
-    "topic": "Dynamic Programming",
-    "difficulty": "Easy",
+    "topic": "Array",
+    "difficulty": "Medium",
     "functionSignature": {
       "javascript": "function climbStairs(n) {\n  // Your code here\n}",
       "java": "public class Solution {\n  public int climbStairs(int n) {\n    // Your code here\n  }\n}"
