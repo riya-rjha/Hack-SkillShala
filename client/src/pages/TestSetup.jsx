@@ -83,6 +83,10 @@ const TestSetup = () => {
             );
         }
 
+        if(selectedQuestions.length == 0){
+          return questions.filter((q) => q.topic.toLowerCase().includes(topicLower)).slice(0, limit);
+        }
+
         // Return the final array (could be less than limit if not enough questions)
         return selectedQuestions;
     };

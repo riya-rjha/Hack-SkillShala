@@ -153,41 +153,35 @@ const CodeEditorComponent = () => {
   const handleSubmitTest = async () => {
     if (!window.confirm("Are you sure you want to submit the test?")) return;
 
-  // Gather submitted codes
-  const submittedData = selectedQuestions.map((q) => {
-    const savedCode = localStorage.getItem(`submitted_code_${q.id}`) || "";
-    return {
-      questionId: q.id,
-      title: q.title,
-      userSolution: savedCode,
-    };
-  });
-
-  console.log(submittedData);
-  try {
-    const response = await axios.post("http://localhost:8080/test/save-submission", submittedData, {
-      headers: { "Content-Type": "application/json" },
+    // Gather submitted codes
+    const submittedData = selectedQuestions.map((q) => {
+      const savedCode = localStorage.getItem(`submitted_code_${q.id}`) || "";
+      return {
+        id: q.id,
+        problem_title: q.title,
+        user_code: savedCode,
+      };
     });
 
-    if (response.status === 200) {
-      alert("✅ Test submitted successfully!");
-      clearTestData();
-      navigate("/roadmap", {
-        state: { code, ques: selectedProblem.description },
+    console.log(submittedData);
+    try {
+      const response = await axios.post("http://localhost:8080/test/save-submission", submittedData, {
+        headers: { "Content-Type": "application/json" },
       });
-    } else {
-      alert("⚠️ Something went wrong while submitting the test.");
+
+      if (response.status === 200) {
+        alert("✅ Test submitted successfully!");
+        clearTestData();
+        navigate("/analysis", {
+          state: {submittedData},
+        });
+      } else {
+        alert("⚠️ Something went wrong while submitting the test.");
+      }
+    } catch (error) {
+      console.error("❌ Submission error:", error);
+      alert("Failed to submit test. Please try again later.");
     }
-  } catch (error) {
-    console.error("❌ Submission error:", error);
-    alert("Failed to submit test. Please try again later.");
-  }
-    // if (window.confirm("Are you sure you want to submit the test?")) {
-    //   navigate("/roadmap", {
-    //     state: { code, ques: selectedProblem.description },
-    //   });
-    //   clearTestData();
-    // }
   };
 
   const handleSubmitCode = () => {

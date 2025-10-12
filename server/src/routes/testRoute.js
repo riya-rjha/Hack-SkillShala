@@ -110,8 +110,8 @@ router.post("/save-submission", async (req, res) => {
     console.log("📩 Received submissions:", submissions);
 
     // Folder and file path inside your project
-    const submissionsDir = path.join(__dirname, "../../../ai-demo/submissions");
-    const filePath = path.join(submissionsDir, "submitted_test.json");
+    const submissionsDir = path.join(__dirname, "../../../chatbot");
+    const filePath = path.join(submissionsDir, "submissions.json");
 
     // Ensure folder exists
     fs.mkdirSync(submissionsDir, { recursive: true });

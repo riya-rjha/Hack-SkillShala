@@ -1,7 +1,0 @@
-[
-  {
-    "questionId": 5,
-    "title": "Valid Parentheses",
-    "userSolution": "function isValid(s) {\n  // Your code here\n  return true;\n}"
-  }
-]

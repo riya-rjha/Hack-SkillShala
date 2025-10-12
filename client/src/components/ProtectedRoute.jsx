@@ -8,6 +8,12 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+   Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("submitted_code_")) {
+        localStorage.removeItem(key);
+      }
+  });
+
   return children;
 };
 
