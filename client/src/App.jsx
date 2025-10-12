@@ -1,3 +1,7 @@
+//     "id": 2,
+// "code": "prev = None\nwhile head.next:\n  temp = head.next\n  head.next = prev\n  prev = head\n  head = temp\nreturn prev",
+// "ques": "Reverse a Linked List"
+
 import React from "react";
 import { Box, CssBaseline } from "@mui/material";
 import { Routes, Route } from "react-router-dom";
@@ -50,9 +54,7 @@ const App = () => {
       <Route path="/signup" element={<SignupPage />} />
       <Route
         path="/roadmap"
-        element={
-          <PersonalizedRoadmap></PersonalizedRoadmap>
-        }
+        element={<PersonalizedRoadmap></PersonalizedRoadmap>}
       />
     </Routes>
   );

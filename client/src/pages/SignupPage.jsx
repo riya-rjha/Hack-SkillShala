@@ -51,7 +51,6 @@ const RegisterPage = () => {
         "Something went wrong during signup.";
       alert(`Signup failed: ${message}`);
       console.error("Signup error:", error);
-    } finally {
     }
   };
 
