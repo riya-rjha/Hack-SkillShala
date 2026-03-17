@@ -7,6 +7,7 @@ import { Box, CssBaseline } from "@mui/material";
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import Navbar from "./components/Navbar.jsx";
+import AboutUs from "./components/AboutUs.jsx";
 import MainContent from "./components/MainContent.jsx";
 import Footer from "./components/Footer.jsx";
 import Roadmap from "./components/Roadmap.jsx";
@@ -16,6 +17,8 @@ import SignupPage from "./pages/SignupPage.jsx";
 import PersonalizedRoadmap from "./pages/PersonalizedRoadmap.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import TestSetup from "./pages/TestSetup.jsx";
+import Services from "./components/Services.jsx";
+import { Link } from "react-router-dom";
 
 const App = () => {
   return (
@@ -30,7 +33,7 @@ const App = () => {
               <MainContent />
             </Box>
             <Footer />
-            <Roadmap />
+            <Roadmap to='/roadmap'/>
           </Box>
         }
       />
@@ -40,6 +43,18 @@ const App = () => {
           <ProtectedRoute>
             <TestSetup />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/aboutus"
+        element={
+          <AboutUs/>
+        }
+      />
+      <Route
+        path="/services"
+        element={
+          <Services/>
         }
       />
       <Route

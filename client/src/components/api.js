@@ -6,15 +6,22 @@ const API = axios.create({
 });
 
 export const executeCode = async (language, sourceCode, stdin = "") => {
+  const mappedLanguage =
+    language === "cpp" ? "c++" : language;
+
+  console.log("LANG:", mappedLanguage);
+  console.log("VERSION:", LANGUAGE_VERSIONS[mappedLanguage]);
+
   const response = await API.post("/execute", {
-    language: language,
-    version: LANGUAGE_VERSIONS[language],
+    language: mappedLanguage,
+    version: LANGUAGE_VERSIONS[mappedLanguage],
     files: [
       {
         content: sourceCode,
       },
     ],
-    stdin: stdin, // Add stdin support for Java and other languages
+    stdin: stdin,
   });
+
   return response.data;
 };

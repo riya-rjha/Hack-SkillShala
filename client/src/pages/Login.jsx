@@ -26,7 +26,7 @@ const LoginPage = () => {
   }
 
   try {
-    const response = await axios.post("http://localhost:8080/user/login", {
+    const response = await axios.post("http://localhost:7654/user/login", {
       email,
       password,
     });
@@ -37,6 +37,7 @@ const LoginPage = () => {
     localStorage.setItem("token", token);
 
     alert(message || "Login successful!");
+    console.log(message || "Login successful!");
     navigate("/");
 
   } catch (error) {

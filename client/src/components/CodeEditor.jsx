@@ -11,6 +11,7 @@ import {
   Grid,
   Paper,
   Slide,
+  ButtonBase,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -26,7 +27,8 @@ const extractFunctionName = (code, language) => {
   let match;
   switch (language) {
     case "javascript":
-      match = code.match(/function\s+(\w+)\s*\(/) || code.match(/const\s+(\w+)\s*=/);
+      match =
+        code.match(/function\s+(\w+)\s*\(/) || code.match(/const\s+(\w+)\s*=/);
       break;
     case "python":
       match = code.match(/def\s+(\w+)\s*\(/);
@@ -47,20 +49,22 @@ const extractFunctionName = (code, language) => {
 const wrapUserCode = (userCode, language, testCases, problemId) => {
   // Extract function name from user's code
   const functionName = extractFunctionName(userCode, language);
-  
+
   if (!functionName) {
-    throw new Error("Could not detect function name. Please ensure your function is properly defined.");
+    throw new Error(
+      "Could not detect function name. Please ensure your function is properly defined.",
+    );
   }
 
   // Detect input structure from first test case
   const firstTest = testCases[0];
   const inputKeys = Object.keys(firstTest.input);
-  
+
   switch (language) {
     case "javascript":
       // Build function call dynamically based on input keys
-      const jsParams = inputKeys.map(key => `tc.input.${key}`).join(", ");
-      
+      const jsParams = inputKeys.map((key) => `tc.input.${key}`).join(", ");
+
       return `
 ${userCode}
 
@@ -78,8 +82,10 @@ console.log(results.join('\\n---\\n'));
 `;
 
     case "python":
-      const pyParams = inputKeys.map(key => `tc['input']['${key}']`).join(", ");
-      
+      const pyParams = inputKeys
+        .map((key) => `tc['input']['${key}']`)
+        .join(", ");
+
       return `
 ${userCode}
 
@@ -100,15 +106,21 @@ print('\\n---\\n'.join(results))
     case "java":
       // Extract only the method from user code
       let methodCode = userCode;
-      
+
       // Remove class wrapper if present
-      if (userCode.includes("public class") || userCode.includes("class Solution")) {
+      if (
+        userCode.includes("public class") ||
+        userCode.includes("class Solution")
+      ) {
         // Try to extract just the method(s)
         const classContentMatch = userCode.match(/class\s+\w+\s*\{([\s\S]*)\}/);
         if (classContentMatch) {
           methodCode = classContentMatch[1].trim();
           // Remove main method if present
-          methodCode = methodCode.replace(/public\s+static\s+void\s+main\s*\([^)]*\)\s*\{[\s\S]*?\}\s*(?=public|private|\}|$)/g, '');
+          methodCode = methodCode.replace(
+            /public\s+static\s+void\s+main\s*\([^)]*\)\s*\{[\s\S]*?\}\s*(?=public|private|\}|$)/g,
+            "",
+          );
         }
       }
 
@@ -157,8 +169,8 @@ ${methodCode}
       };
 
     case "cpp":
-    testCases.map(tc => JSON.stringify(tc)).join(",\n");
-      
+      testCases.map((tc) => JSON.stringify(tc)).join(",\n");
+
       return `
 #include <iostream>
 #include <vector>
@@ -195,7 +207,7 @@ const parseOutput = (output) => {
   return parts.map((part) => {
     let cleaned;
     try {
-       cleaned = part.trim();
+      cleaned = part.trim();
       return JSON.parse(cleaned);
     } catch {
       // If JSON parsing fails, try to extract array from string
@@ -217,7 +229,7 @@ const parseOutput = (output) => {
 const valuesEqual = (a, b) => {
   if (a === b) return true;
   if (a == null || b == null) return false;
-  
+
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
     for (let i = 0; i < a.length; i++) {
@@ -225,8 +237,8 @@ const valuesEqual = (a, b) => {
     }
     return true;
   }
-  
-  if (typeof a === 'object' && typeof b === 'object') {
+
+  if (typeof a === "object" && typeof b === "object") {
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
     if (keysA.length !== keysB.length) return false;
@@ -235,7 +247,7 @@ const valuesEqual = (a, b) => {
     }
     return true;
   }
-  
+
   return false;
 };
 
@@ -270,21 +282,23 @@ const CodeEditorComponent = () => {
   // Update code when currentQIndex or language changes
   useEffect(() => {
     // First check if there's submitted code for this question
-    const submittedCode = localStorage.getItem(`submitted_code_${selectedProblem.id}`);
-    
+    const submittedCode = localStorage.getItem(
+      `submitted_code_${selectedProblem.id}`,
+    );
+
     // Then check language-specific saved code
     const saved = localStorage.getItem(`code_${language}_${currentQIndex}`);
-    
+
     // Priority: submitted code > saved code > function signature > template
     setCode(
       submittedCode ||
-      saved ||
-      (selectedProblem.functionSignature
-        ? selectedProblem.functionSignature[language]
-        : languageTemplates?.[language]) ||
-      "// Write your code here"
+        saved ||
+        (selectedProblem.functionSignature
+          ? selectedProblem.functionSignature[language]
+          : languageTemplates?.[language]) ||
+        "// Write your code here",
     );
-    
+
     // Clear output when switching questions
     setShowResult(false);
     setOutput(null);
@@ -383,41 +397,75 @@ public class Main {
   };
 
   const handleRun = async () => {
-    const userCode = editorRef.current.getValue();
+    console.log("🔥 STEP 0: handleRun triggered");
+
+    const userCode = editorRef.current?.getValue();
+    console.log("🔥 STEP 1: userCode fetched", userCode);
+
     if (!userCode) {
+      console.log("❌ STEP 2: No userCode");
       setOutput("Error: No code provided.");
       setShowResult(true);
       return;
     }
 
+    console.log("✅ STEP 2: userCode exists");
+
     if (language === "java" && !isValidJavaCode(userCode)) {
+      console.log("❌ STEP 3: Invalid Java code");
       setOutput(
-        "Error: Please provide a valid Solution class with a twoSum method."
+        "Error: Please provide a valid Solution class with a twoSum method.",
       );
       setShowResult(true);
       return;
     }
 
+    console.log("✅ STEP 3: Java validation passed");
+
     setIsLoading(true);
     setShowResult(false);
+    console.log("🔥 STEP 4: Loading started");
 
     try {
       const results = [];
       const testCases = selectedProblem.testCases;
 
-      const wrapped = wrapUserCode(userCode, language, testCases, selectedProblem.id);
+      console.log("🔥 STEP 5: testCases", testCases);
+
+      const wrapped = wrapUserCode(
+        userCode,
+        language,
+        testCases,
+        selectedProblem.id,
+      );
+
+      console.log("🔥 STEP 6: wrapped code", wrapped);
+
       let sourceCode = wrapped;
       let stdin = "";
 
       if (language === "java") {
         sourceCode = wrapped.sourceCode;
         stdin = wrapped.stdin;
+        console.log("🔥 STEP 7: Java mode", sourceCode, stdin);
       }
 
-      const { run } = await executeCode(language, sourceCode, stdin);
-      
-      // Check for compilation/runtime errors
+      console.log("🔥 STEP 8: Calling executeCode");
+
+      const response = await executeCode(language, sourceCode, stdin);
+
+      console.log("🔥 STEP 9: Raw response", response);
+
+      const run = response.run;
+      console.log("🔥 STEP 10: run object", run);
+
+      if (!run) {
+        console.log("❌ STEP 11: run is undefined");
+        throw new Error("No run object returned from API");
+      }
+
       if (run.stderr && run.stderr.trim()) {
+        console.log("❌ STEP 12: stderr found", run.stderr);
         setOutput(`Error:\n${run.stderr}`);
         setShowResult(true);
         setIsLoading(false);
@@ -425,27 +473,42 @@ public class Main {
       }
 
       if (!run.output || run.output.trim() === "") {
+        console.log("❌ STEP 13: No output", run.output);
         setOutput("Error: No output received. Please check your code.");
         setShowResult(true);
         setIsLoading(false);
         return;
       }
 
-      const outputs = parseOutput(run.output);
+      console.log("✅ STEP 14: Output received", run.output);
 
-      // Build results comparing actual vs expected
+      const outputs = parseOutput(run.output);
+      console.log("🔥 STEP 15: Parsed outputs", outputs);
+
       testCases.forEach((testCase, i) => {
         const actual = outputs[i];
         const passed = valuesEqual(actual, testCase.expected);
+
+        console.log(`🔥 STEP 16: Test ${i}`, {
+          input: testCase.input,
+          expected: testCase.expected,
+          actual,
+          passed,
+        });
+
         results.push({ ...testCase, actual, passed });
       });
 
-      // Format output
+      console.log("🔥 STEP 17: Final results", results);
+
       const inputKeys = Object.keys(testCases[0].input);
+
       setOutput(
         results
           .map((r, i) => {
-            const inputStr = inputKeys.map(key => `${key}=${JSON.stringify(r.input[key])}`).join(", ");
+            const inputStr = inputKeys
+              .map((key) => `${key}=${JSON.stringify(r.input[key])}`)
+              .join(", ");
             return (
               `Test Case ${i + 1}: ${r.passed ? "✅ Passed" : "❌ Failed"}\n` +
               `Input: ${inputStr}\n` +
@@ -453,13 +516,18 @@ public class Main {
               `Got: ${JSON.stringify(r.actual)}`
             );
           })
-          .join("\n\n")
+          .join("\n\n"),
       );
+
+      console.log("✅ STEP 18: Output set successfully");
+
       setShowResult(true);
     } catch (err) {
+      console.log("❌ STEP ERROR:", err);
       setOutput(`Error: ${err.message}`);
       setShowResult(true);
     } finally {
+      console.log("🔥 STEP FINAL: Loading false");
       setIsLoading(false);
     }
   };
@@ -511,11 +579,11 @@ public class Main {
     console.log(submittedData);
     try {
       const response = await axios.post(
-        "http://localhost:8080/test/save-submission",
+        "http://localhost:7654/test/save-submission",
         submittedData,
         {
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -545,6 +613,32 @@ public class Main {
 
   return (
     <div>
+      <div
+        style={{
+          position: "fixed",
+          bottom: "30px",
+          right: "30px",
+          zIndex: 9999999,
+        }}
+      >
+        <button
+          onClick={() => {
+            console.log("BUTTON CLICKED");
+            handleRun()
+          }}
+          style={{
+            padding: "15px 25px",
+            fontSize: "16px",
+            background: "green",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+        >
+          RUN TEST
+        </button>
+      </div>
       {/* Top AppBar */}
       <AppBar
         position="static"
@@ -661,7 +755,9 @@ public class Main {
                 sx={{ borderBottom: "1px solid grey" }}
               >
                 {selectedQuestions?.map((q, idx) => {
-                  const isSubmitted = localStorage.getItem(`submitted_code_${q.id}`);
+                  const isSubmitted = localStorage.getItem(
+                    `submitted_code_${q.id}`,
+                  );
                   return (
                     <Box
                       key={idx}
@@ -671,8 +767,15 @@ public class Main {
                         height: 35,
                         borderRadius: "50%",
                         backgroundColor:
-                          idx === currentQIndex ? "#00cba9" : isSubmitted ? "#4caf50" : "#ccc",
-                        color: idx === currentQIndex || isSubmitted ? "#fff" : "#000",
+                          idx === currentQIndex
+                            ? "#00cba9"
+                            : isSubmitted
+                              ? "#4caf50"
+                              : "#ccc",
+                        color:
+                          idx === currentQIndex || isSubmitted
+                            ? "#fff"
+                            : "#000",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -724,42 +827,53 @@ public class Main {
             setLanguage={(newLang) => setLanguage(newLang)}
           />
 
-          <CodeEditor
-            height="60vh"
-            options={{ lineHeight: 30 }}
-            language={language}
-            value={code}
-            onChange={(newCode) => {
-              setCode(newCode);
-              localStorage.setItem(
-                `code_${language}_${currentQIndex}`,
-                newCode
-              );
-            }}
-            onMount={onMount}
-            theme="vs-light"
-          />
-
+          <Box sx={{ position: "relative", zIndex: 1 }}>
+            <CodeEditor
+              height="60vh"
+              options={{ lineHeight: 30 }}
+              language={language}
+              value={code}
+              onChange={(newCode) => {
+                setCode(newCode);
+                localStorage.setItem(
+                  `code_${language}_${currentQIndex}`,
+                  newCode,
+                );
+              }}
+              onMount={onMount}
+              theme="vs-light"
+            />
+          </Box>
           {/* Run / Submit Buttons */}
           <Box
             display="flex"
             justifyContent="center"
             gap={2}
-            sx={{ marginTop: "auto", padding: 2, backgroundColor: "#f5f5f5" }}
+            sx={{
+              marginTop: "auto",
+              padding: 2,
+              backgroundColor: "#f5f5f5",
+              position: "relative",
+              zIndex: 10, // 🔥 VERY IMPORTANT
+            }}
           >
-            <LoadingButton
+            {/* <p
               variant="contained"
               color="success"
-              onClick={handleRun}
-              loading={isLoading}
-              sx={{ textTransform: "none", fontWeight: "bold" }}
+              onClick={() => {
+                console.log("BUTTON CLICKED");
+                handleRun();
+              }}
             >
               Run
-            </LoadingButton>
+            </p>{" "} */}
             <LoadingButton
               variant="contained"
               color="primary"
-              onClick={handleSubmitCode}
+              onClick={() => {
+                handleSubmitCode();
+                console.log("first");
+              }}
               sx={{ textTransform: "none", fontWeight: "bold" }}
             >
               Submit

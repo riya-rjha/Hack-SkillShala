@@ -16,8 +16,6 @@ with open("training_data.jsonl", "r") as f:
     for line in f:
         data = json.loads(line)
         
-        # --- THIS IS THE CORRECTED LINE ---
-        # We just need the code string itself, not to load it as JSON.
         key = data['input_text'].split("Code: '")[1].strip("'") 
         
         model_knowledge[key] = json.loads(data['output_text'])

@@ -28,7 +28,7 @@ const RegisterPage = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8080/user/signup", {
+      const response = await axios.post("http://localhost:7654/user/signup", {
         name,
         email,
         password,

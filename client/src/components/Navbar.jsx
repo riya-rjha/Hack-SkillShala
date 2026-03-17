@@ -85,25 +85,36 @@ const Navbar = () => {
 
           {/* Center - Nav Links */}
           {!isMobile && (
-            <Box sx={{ display: "flex", gap: 2, flexGrow: 2, justifyContent: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                flexGrow: 2,
+                justifyContent: "center",
+              }}
+            >
               {navItems.map((item) => (
                 <Button
                   key={item}
                   color="inherit"
                   component={Link}
-                  to={`/${item.replace(/\s/g, "").toLowerCase()}`}
+                  to={
+                    item === "Roadmap"
+                      ? "/analysis"
+                      : `/${item.replace(/\s/g, "").toLowerCase()}`
+                  }
                 >
                   {item}
                 </Button>
               ))}
               <Button
-                  key={"test-setup"}
-                  color="inherit"
-                  component={Link}
-                  to={`/test-setup`}
-                >
-                  TEST
-                </Button>
+                key={"test-setup"}
+                color="inherit"
+                component={Link}
+                to={`/test-setup`}
+              >
+                TEST
+              </Button>
             </Box>
           )}
 
@@ -122,7 +133,9 @@ const Navbar = () => {
               <>
                 {!isMobile ? (
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Avatar sx={{ bgcolor: "secondary.main", width: 32, height: 32 }}>
+                    <Avatar
+                      sx={{ bgcolor: "secondary.main", width: 32, height: 32 }}
+                    >
                       {username.charAt(0).toUpperCase()}
                     </Avatar>
                     <Typography sx={{ color: "white" }}>{username}</Typography>
@@ -170,7 +183,14 @@ const Navbar = () => {
               ) : (
                 <>
                   <ListItem>
-                    <Avatar sx={{ bgcolor: "secondary.main", width: 32, height: 32, mr: 1 }}>
+                    <Avatar
+                      sx={{
+                        bgcolor: "secondary.main",
+                        width: 32,
+                        height: 32,
+                        mr: 1,
+                      }}
+                    >
                       {username.charAt(0).toUpperCase()}
                     </Avatar>
                     <ListItemText primary={username} />
